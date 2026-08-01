@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#24584a">
+  <title>专四专八估分器</title>
+  <style>
+    :root { --green:#24584a; --green2:#347362; --ink:#1d2925; --muted:#6e7874; --line:#e4e9e6; --bg:#f5f4ef; --red:#bb4943; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+    button,input,select { font:inherit; }
+    .page { width:min(680px,calc(100% - 28px)); margin:0 auto; padding:36px 0 56px; }
+    header { text-align:center; margin-bottom:22px; }
+    h1 { margin:0 0 9px; font-size:clamp(1.8rem,7vw,2.5rem); letter-spacing:-.04em; }
+    header p { margin:0; color:var(--muted); font-size:.9rem; }
+    .card { background:#fff; border:1px solid rgba(30,70,58,.08); border-radius:18px; box-shadow:0 14px 40px rgba(24,57,47,.08); overflow:hidden; }
+    .exam-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:7px; margin-bottom:14px; background:#e8ece9; border-radius:14px; }
+    .exam-tabs button { min-height:48px; border:0; border-radius:10px; color:#63706b; background:transparent; cursor:pointer; font-weight:800; }
+    .exam-tabs button.active { color:#fff; background:var(--green); box-shadow:0 5px 14px rgba(36,88,74,.22); }
+    .card-title { padding:20px 20px 13px; }
+    .card-title strong { display:block; font-size:1.1rem; }
+    .card-title span { display:block; margin-top:5px; color:var(--muted); font-size:.8rem; }
+    .table-head,.row { display:grid; grid-template-columns:minmax(0,1fr) 82px 190px; align-items:center; gap:16px; }
+    .table-head { padding:10px 20px; color:var(--muted); background:#f5f7f5; border-top:1px solid var(--line); font-size:.75rem; font-weight:800; }
+    .table-head span:last-child { text-align:center; }
+    .row { padding:16px 20px; border-top:1px solid var(--line); }
+    .name { font-weight:800; }
+    .part { margin-bottom:4px; color:var(--green2); font-size:.7rem; font-weight:900; letter-spacing:.08em; }
+    .part:empty { display:none; }
+    .quantity { color:var(--muted); font-size:.85rem; font-weight:700; }
+    .field { position:relative; }
+    input { width:100%; height:48px; padding:0 67px 0 13px; color:var(--ink); background:#fafbf9; border:1px solid #dce3df; border-radius:11px; outline:0; font-weight:800; }
+    input:focus { border-color:var(--green2); box-shadow:0 0 0 4px rgba(52,115,98,.11); }
+    input.error { border-color:var(--red); box-shadow:0 0 0 3px rgba(187,73,67,.1); }
+    .unit { position:absolute; top:50%; right:12px; transform:translateY(-50%); color:#87908c; font-size:.75rem; pointer-events:none; }
+    .actions { padding:16px 20px 20px; border-top:1px solid var(--line); }
+    .calculate { width:100%; min-height:51px; color:#fff; background:var(--green); border:0; border-radius:12px; cursor:pointer; font-weight:900; font-size:1rem; box-shadow:0 8px 20px rgba(36,88,74,.18); }
+    .calculate:hover { background:var(--green2); }
+    .result { display:none; margin-top:14px; padding:23px; color:#fff; background:linear-gradient(135deg,#204d41,#33725f); border-radius:18px; box-shadow:0 14px 35px rgba(36,88,74,.16); }
+    .result.show { display:block; }
+    .result-main { display:flex; align-items:end; justify-content:space-between; gap:16px; }
+    .result-label { color:rgba(255,255,255,.68); font-size:.8rem; font-weight:700; }
+    .score { margin-top:5px; font-size:3.7rem; line-height:1; font-weight:900; letter-spacing:-.06em; }
+    .score small { margin-left:6px; color:rgba(255,255,255,.55); font-size:.9rem; letter-spacing:0; }
+    .grade { padding:7px 12px; color:#25483e; background:#efbd63; border-radius:999px; font-size:.8rem; font-weight:900; }
+    .summary { margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,.15); color:rgba(255,255,255,.76); font-size:.8rem; line-height:1.7; }
+    footer { margin-top:16px; color:#7b8480; text-align:center; font-size:.75rem; line-height:1.6; }
+    @media (max-width:520px) {
+      .page { padding-top:24px; }
+      .table-head,.row { grid-template-columns:minmax(80px,1fr) 52px 132px; gap:8px; padding-left:12px; padding-right:12px; }
+      .table-head { font-size:.68rem; }
+      .row { padding-top:13px; padding-bottom:13px; }
+      input { padding-left:9px; padding-right:48px; }
+      .unit { right:8px; }
+      .card-title,.actions { padding-left:16px; padding-right:16px; }
+      .field { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <h1>专四专八估分器</h1>
+      <p>选考试、填数字，马上得到估分</p>
+    </header>
+
+    <nav class="exam-tabs" aria-label="选择考试">
+      <button type="button" data-exam="TEM4" class="active">英语专四 TEM4</button>
+      <button type="button" data-exam="TEM8">英语专八 TEM8</button>
+    </nav>
+
+    <section class="card">
+      <div class="card-title">
+        <strong id="formTitle">专四成绩</strong>
+      </div>
+      <div class="table-head"><span>题型</span><span>题量</span><span>你的正确题数 / 你的预估分值</span></div>
+      <div id="rows"></div>
+      <div class="actions"><button type="button" class="calculate" id="calculate">计算总分</button></div>
+    </section>
+
+    <section class="result" id="result" aria-live="polite"></section>
+    <footer>估分仅供参考，实际题型与分值请以当年考试要求为准。填写内容只保存在你的浏览器中。</footer>
+  </main>
+
+  <script>
+    const exams = {
+      TEM4: [
+        { part:'PART I', name:'听写', quantity:'1 篇', max:10, full:10, type:'score' },
+        { part:'PART II', name:'听力理解', max:20, full:20, type:'count' },
+        { part:'PART III', name:'语言知识', max:20, full:20, type:'count' },
+        { part:'PART IV', name:'完形填空', max:10, full:10, type:'count' },
+        { part:'PART V', name:'Section A 阅读选择题', max:10, full:10, type:'count' },
+        { part:'', name:'Section B 阅读简答题', quantity:'5 题', max:10, full:10, type:'score' },
+        { part:'PART VI', name:'写作', quantity:'1 篇', max:20, full:20, type:'score' }
+      ],
+      TEM8: [
+        { part:'PART I', name:'听力理解', max:25, full:25, type:'count' },
+        { part:'PART II', name:'Section A 阅读选择题', max:14, full:14, type:'count' },
+        { part:'', name:'Section B 阅读简答题', quantity:'8 题', max:16, full:16, type:'score' },
+        { part:'PART III', name:'语言知识（改错）', max:10, full:10, type:'count' },
+        { part:'PART IV', name:'汉译英', quantity:'1 篇', max:15, full:15, type:'score' },
+        { part:'PART V', name:'写作', quantity:'1 篇', max:20, full:20, type:'score' }
+      ]
+    };
+    const STORAGE_KEY='tem_simple_scores_v3';
+    let current='TEM4';
+    let saved={};
+    try { saved=JSON.parse(localStorage.getItem(STORAGE_KEY))||{}; current=saved.current==='TEM8'?'TEM8':'TEM4'; } catch {}
+    const rows=document.getElementById('rows'), result=document.getElementById('result');
+
+    function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function store(){saved.current=current;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));}catch{}}
+    function render(){
+      document.querySelectorAll('[data-exam]').forEach(b=>b.classList.toggle('active',b.dataset.exam===current));
+      document.getElementById('formTitle').textContent=current==='TEM4'?'专四成绩':'专八成绩';
+      rows.innerHTML=exams[current].map((item,i)=>{
+        const key=current+'_'+i, noun=item.noun||'题';
+        const unit=item.type==='count'?'':`/ ${item.max} 分`;
+        const quantity=item.quantity||(item.type==='count'?`${item.max} ${noun}`:'—');
+        const placeholder=item.type==='count'?'你的正确题数':'你的预估分值';
+        return `<div class="row"><div><div class="part">${item.part}</div><div class="name">${item.name}</div></div><div class="quantity">${quantity}</div><div class="field"><input type="number" inputmode="decimal" min="0" max="${item.max}" step="${item.type==='count'?1:.5}" data-index="${i}" value="${escapeHtml(saved[key]||'')}" placeholder="${placeholder}"${item.type==='count'?' style="padding-right:13px"':''}>${unit?`<span class="unit">${unit}</span>`:''}</div></div>`;
+      }).join('');
+      rows.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>{saved[current+'_'+input.dataset.index]=input.value;input.classList.remove('error');store();}));
+      result.classList.remove('show');
+    }
+    function calculate(){
+      let total=0,bad=false,filled=[];
+      rows.querySelectorAll('input').forEach(input=>{
+        const item=exams[current][Number(input.dataset.index)], raw=input.value.trim(), value=Number(raw);
+        const invalid=raw===''||!Number.isFinite(value)||value<0||value>item.max;
+        input.classList.toggle('error',invalid);bad||=invalid;
+        if(!invalid){const score=item.type==='count'?value/item.max*item.full:value;total+=score;filled.push(`${item.name} ${Math.round(score*10)/10} 分`);}
+      });
+      if(bad){result.innerHTML='<strong>还有项目没填好</strong><div class="summary">请检查红色输入框，每一项都要填写，没做对可以填 0。</div>';result.classList.add('show');rows.querySelector('.error')?.focus();return;}
+      const score=Math.round(total*10)/10,grade=score>=80?'优秀':score>=70?'良好':score>=60?'合格':'未合格';
+      result.innerHTML=`<div class="result-main"><div><div class="result-label">${current} 预估总分</div><div class="score">${score}<small>/ 100</small></div></div><span class="grade">${grade}</span></div><div class="summary">${filled.join(' · ')}</div>`;
+      result.classList.add('show');result.scrollIntoView({behavior:'smooth',block:'nearest'});store();
+    }
+    document.querySelectorAll('[data-exam]').forEach(b=>b.addEventListener('click',()=>{current=b.dataset.exam;store();render();}));
+    document.getElementById('calculate').addEventListener('click',calculate);
+    rows.addEventListener('keydown',e=>{if(e.key==='Enter')calculate();});
+    render();
+  </script>
+</body>
+</html>
