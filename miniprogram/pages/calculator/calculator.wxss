@@ -1,0 +1,488 @@
+.page {
+  width: 100%;
+  max-width: 680px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40rpx 28rpx 64rpx;
+  padding-bottom: calc(64rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(64rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 32rpx;
+  text-align: center;
+}
+
+.title {
+  color: #1d2925;
+  font-size: 56rpx;
+  font-weight: 900;
+  letter-spacing: -2rpx;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin-top: 14rpx;
+  color: #6e7874;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.exam-tabs {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+  padding: 10rpx;
+  background: #e8ece9;
+  border-radius: 24rpx;
+}
+
+.exam-tab {
+  flex: 1;
+  min-width: 0;
+  min-height: 88rpx;
+  margin: 0;
+  padding: 0 8rpx;
+  color: #63706b;
+  background: transparent;
+  border-radius: 18rpx;
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 88rpx;
+}
+
+.exam-tab::after,
+.calculate::after {
+  border: 0;
+}
+
+.exam-tab.active {
+  color: #ffffff;
+  background: #24584a;
+  box-shadow: 0 10rpx 28rpx rgba(36, 88, 74, 0.22);
+}
+
+.exam-tab-hover {
+  opacity: 0.82;
+}
+
+.card {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1rpx solid rgba(30, 70, 58, 0.08);
+  border-radius: 30rpx;
+  box-shadow: 0 24rpx 60rpx rgba(24, 57, 47, 0.08);
+}
+
+.card-title {
+  padding: 32rpx 30rpx 24rpx;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.table-head,
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding-right: 20rpx;
+  padding-left: 20rpx;
+  box-sizing: border-box;
+}
+
+.table-head {
+  min-height: 72rpx;
+  color: #6e7874;
+  background: #f5f7f5;
+  border-top: 1rpx solid #e4e9e6;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.row {
+  min-height: 142rpx;
+  padding-top: 24rpx;
+  padding-bottom: 24rpx;
+  border-top: 1rpx solid #e4e9e6;
+}
+
+.col-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.col-quantity {
+  flex: 0 0 90rpx;
+}
+
+.col-input {
+  flex: 0 0 260rpx;
+}
+
+.table-head .col-input {
+  text-align: center;
+}
+
+.part {
+  margin-bottom: 7rpx;
+  color: #347362;
+  font-size: 20rpx;
+  font-weight: 900;
+  letter-spacing: 2rpx;
+}
+
+.name {
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.quantity {
+  color: #6e7874;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.field {
+  position: relative;
+}
+
+.score-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 92rpx 0 18rpx;
+  color: #1d2925;
+  background: #fafbf9;
+  border: 2rpx solid #dce3df;
+  border-radius: 18rpx;
+  box-sizing: border-box;
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.score-input.focused {
+  border-color: #347362;
+  box-shadow: 0 0 0 6rpx rgba(52, 115, 98, 0.11);
+}
+
+.score-input.no-unit {
+  padding-right: 18rpx;
+}
+
+.score-input.error {
+  border-color: #bb4943;
+  box-shadow: 0 0 0 5rpx rgba(187, 73, 67, 0.1);
+}
+
+.input-placeholder {
+  color: #a1aaa6;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.unit {
+  position: absolute;
+  top: 50%;
+  right: 16rpx;
+  color: #87908c;
+  font-size: 22rpx;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.actions {
+  padding: 28rpx 30rpx 32rpx;
+  border-top: 1rpx solid #e4e9e6;
+}
+
+.calculate {
+  width: 100%;
+  min-height: 96rpx;
+  margin: 0;
+  color: #ffffff;
+  background: #24584a;
+  border: 0;
+  border-radius: 20rpx;
+  box-shadow: 0 14rpx 32rpx rgba(36, 88, 74, 0.18);
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 96rpx;
+}
+
+.calculate-hover {
+  background: #347362;
+  transform: scale(0.995);
+}
+
+.result {
+  margin-top: 24rpx;
+  padding: 38rpx;
+  color: #ffffff;
+  background: linear-gradient(135deg, #204d41, #33725f);
+  border-radius: 30rpx;
+  box-shadow: 0 24rpx 54rpx rgba(36, 88, 74, 0.16);
+}
+
+.result-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.result-label {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.score {
+  margin-top: 8rpx;
+  font-size: 98rpx;
+  font-weight: 900;
+  letter-spacing: -4rpx;
+  line-height: 1;
+}
+
+.score-total {
+  margin-left: 10rpx;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 25rpx;
+  letter-spacing: 0;
+}
+
+.grade {
+  padding: 11rpx 20rpx;
+  color: #25483e;
+  background: #efbd63;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  font-weight: 900;
+}
+
+.error-title {
+  font-size: 30rpx;
+  font-weight: 900;
+}
+
+.summary {
+  margin-top: 28rpx;
+  padding-top: 23rpx;
+  color: rgba(255, 255, 255, 0.76);
+  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+  font-size: 24rpx;
+  line-height: 1.75;
+}
+
+.footer {
+  margin-top: 28rpx;
+  padding: 0 12rpx;
+  color: #7b8480;
+  text-align: center;
+  font-size: 23rpx;
+  line-height: 1.65;
+}
+
+@media (min-width: 600px) {
+  .page {
+    padding-top: 48px;
+    padding-right: 24px;
+    padding-left: 24px;
+    padding-bottom: calc(48px + env(safe-area-inset-bottom));
+  }
+
+  .title {
+    font-size: 40px;
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .exam-tabs {
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 6px;
+    border-radius: 14px;
+  }
+
+  .exam-tab {
+    min-height: 48px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 48px;
+  }
+
+  .card {
+    border-radius: 18px;
+  }
+
+  .card-title {
+    padding: 20px;
+    font-size: 18px;
+  }
+
+  .table-head,
+  .row {
+    gap: 16px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .table-head {
+    min-height: 42px;
+    font-size: 12px;
+  }
+
+  .row {
+    min-height: 82px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .col-quantity {
+    flex-basis: 82px;
+  }
+
+  .col-input {
+    flex-basis: 190px;
+  }
+
+  .part {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .name {
+    font-size: 15px;
+  }
+
+  .quantity {
+    font-size: 13px;
+  }
+
+  .score-input {
+    height: 48px;
+    padding-right: 62px;
+    padding-left: 12px;
+    border-radius: 11px;
+    font-size: 15px;
+  }
+
+  .score-input.no-unit {
+    padding-right: 12px;
+  }
+
+  .input-placeholder {
+    font-size: 12px;
+  }
+
+  .unit {
+    right: 10px;
+    font-size: 12px;
+  }
+
+  .actions {
+    padding: 16px 20px 20px;
+  }
+
+  .calculate {
+    min-height: 52px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 52px;
+  }
+
+  .result {
+    margin-top: 16px;
+    padding: 24px;
+    border-radius: 18px;
+  }
+
+  .result-label,
+  .grade,
+  .summary {
+    font-size: 13px;
+  }
+
+  .score {
+    font-size: 58px;
+  }
+
+  .score-total {
+    font-size: 14px;
+  }
+
+  .footer {
+    margin-top: 18px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .page {
+    padding-right: 22rpx;
+    padding-left: 22rpx;
+  }
+
+  .col-quantity {
+    flex-basis: 82rpx;
+  }
+
+  .col-input {
+    flex-basis: 244rpx;
+  }
+
+  .score-input {
+    padding-right: 84rpx;
+  }
+}
+
+@media (max-width: 350px) {
+  .title {
+    font-size: 50rpx;
+  }
+
+  .table-head .col-input {
+    display: none;
+  }
+
+  .table-head .col-name {
+    flex: 1;
+  }
+
+  .row {
+    flex-wrap: wrap;
+    gap: 10rpx 14rpx;
+    padding-top: 22rpx;
+    padding-bottom: 24rpx;
+  }
+
+  .row .col-name {
+    flex: 1;
+  }
+
+  .row .col-quantity {
+    flex: 0 0 92rpx;
+    text-align: right;
+  }
+
+  .row .field {
+    flex: 0 0 100%;
+    margin-top: 8rpx;
+  }
+
+  .score-input {
+    padding-right: 94rpx;
+  }
+
+  .score {
+    font-size: 88rpx;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "pages/calculator/calculator"
+  ],
+  "window": {
+    "navigationBarTitleText": "专四专八估分器",
+    "navigationBarBackgroundColor": "#24584a",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f4ef",
+    "backgroundTextStyle": "dark"
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

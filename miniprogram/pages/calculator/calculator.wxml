@@ -1,0 +1,90 @@
+<view class="page">
+  <view class="header">
+    <view class="title">专四专八估分器</view>
+    <view class="subtitle">选考试、填数字，马上得到估分</view>
+  </view>
+
+  <view class="exam-tabs" aria-role="tablist">
+    <button
+      class="exam-tab {{current === 'TEM4' ? 'active' : ''}}"
+      hover-class="exam-tab-hover"
+      data-exam="TEM4"
+      bindtap="switchExam"
+      aria-label="英语专业四级 TEM4"
+    >英语专四 TEM4</button>
+    <button
+      class="exam-tab {{current === 'TEM8' ? 'active' : ''}}"
+      hover-class="exam-tab-hover"
+      data-exam="TEM8"
+      bindtap="switchExam"
+      aria-label="英语专业八级 TEM8"
+    >英语专八 TEM8</button>
+  </view>
+
+  <view class="card">
+    <view class="card-title">{{formTitle}}</view>
+    <view class="table-head">
+      <text class="col-name">题型</text>
+      <text class="col-quantity">题量</text>
+      <text class="col-input">正确题数 / 预估分值</text>
+    </view>
+
+    <view class="row" wx:for="{{rows}}" wx:key="index">
+      <view class="col-name">
+        <view wx:if="{{item.part}}" class="part">{{item.part}}</view>
+        <view class="name">{{item.name}}</view>
+      </view>
+      <view class="col-quantity quantity">{{item.quantityText}}</view>
+      <view class="col-input field">
+        <input
+          class="score-input {{item.error ? 'error' : ''}} {{focusedIndex === item.index ? 'focused' : ''}} {{item.unit ? '' : 'no-unit'}}"
+          type="digit"
+          inputmode="decimal"
+          value="{{item.value}}"
+          placeholder="{{item.placeholder}}"
+          placeholder-class="input-placeholder"
+          data-index="{{item.index}}"
+          bindinput="handleInput"
+          bindfocus="handleFocus"
+          bindblur="handleBlur"
+          bindconfirm="calculate"
+          confirm-type="done"
+          cursor-spacing="24"
+          adjust-position="true"
+          aria-label="{{item.name}}，{{item.placeholder}}，最高 {{item.max}}"
+        />
+        <text wx:if="{{item.unit}}" class="unit">{{item.unit}}</text>
+      </view>
+    </view>
+
+    <view class="actions">
+      <button
+        class="calculate"
+        hover-class="calculate-hover"
+        hover-stay-time="80"
+        bindtap="calculate"
+      >计算总分</button>
+    </view>
+  </view>
+
+  <view wx:if="{{resultVisible}}" id="result" class="result" aria-live="polite">
+    <block wx:if="{{resultError}}">
+      <view class="error-title">还有项目没填好</view>
+      <view class="summary">{{resultMessage}}</view>
+    </block>
+    <block wx:else>
+      <view class="result-main">
+        <view>
+          <view class="result-label">{{current}} 预估总分</view>
+          <view class="score">{{score}}<text class="score-total">/ 100</text></view>
+        </view>
+        <view class="grade">{{grade}}</view>
+      </view>
+      <view class="summary">{{summary}}</view>
+    </block>
+  </view>
+
+  <view class="footer">
+    估分仅供参考，实际题型与分值请以当年考试要求为准。填写内容只保存在你的微信本地存储中。
+  </view>
+</view>
