@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#24584a">
   <title>专四专八估分器｜TEM4/TEM8 在线成绩估算</title>
   <meta name="description" content="免费在线专四专八估分器，支持英语专业四级（TEM4）和专业八级（TEM8），按各题型填写正确题数或预估分值，快速计算百分制预估总分。">
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./favicon.png" type="image/png">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_CN">
@@ -147,7 +147,8 @@
       let total=0,bad=false,filled=[];
       rows.querySelectorAll('input').forEach(input=>{
         const item=exams[current][Number(input.dataset.index)], raw=input.value.trim(), value=Number(raw);
-        const invalid=raw===''||!Number.isFinite(value)||value<0||value>item.max;
+        const invalidStep=item.type==='count'?!Number.isInteger(value):!Number.isInteger(value*2);
+        const invalid=raw===''||!Number.isFinite(value)||value<0||value>item.max||invalidStep;
         input.classList.toggle('error',invalid);bad||=invalid;
         if(!invalid){const score=item.type==='count'?value/item.max*item.full:value;total+=score;filled.push(`${item.name} ${Math.round(score*10)/10} 分`);}
       });
