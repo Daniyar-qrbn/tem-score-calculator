@@ -1,0 +1,7 @@
+{
+  "name": "tem-score-calculator",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}
