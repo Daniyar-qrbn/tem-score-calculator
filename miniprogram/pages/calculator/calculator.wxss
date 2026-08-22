@@ -53,7 +53,8 @@
 }
 
 .exam-tab::after,
-.calculate::after {
+.calculate::after,
+.share-result::after {
   border: 0;
 }
 
@@ -77,6 +78,7 @@
 
 .card-title {
   padding: 32rpx 30rpx 24rpx;
+  text-align: center;
   font-size: 34rpx;
   font-weight: 800;
 }
@@ -275,6 +277,24 @@
   line-height: 1.75;
 }
 
+.share-result {
+  width: 100%;
+  min-height: 88rpx;
+  margin: 28rpx 0 0;
+  color: #25483e;
+  background: #efbd63;
+  border: 0;
+  border-radius: 18rpx;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 88rpx;
+}
+
+.share-result-hover {
+  background: #f4c976;
+  transform: scale(0.995);
+}
+
 .footer {
   margin-top: 28rpx;
   padding: 0 12rpx;
@@ -397,6 +417,13 @@
     border-radius: 12px;
     font-size: 16px;
     line-height: 52px;
+  }
+
+  .share-result {
+    min-height: 48px;
+    border-radius: 11px;
+    font-size: 15px;
+    line-height: 48px;
   }
 
   .result {

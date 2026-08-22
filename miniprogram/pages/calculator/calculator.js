@@ -116,7 +116,8 @@ Page({
     const rows = this.data.rows.map((row) => {
       const raw = String(row.value).trim()
       const value = Number(raw)
-      const error = raw === '' || !Number.isFinite(value) || value < 0 || value > row.max
+      const invalidStep = row.type === 'count' ? !Number.isInteger(value) : !Number.isInteger(value * 2)
+      const error = raw === '' || !Number.isFinite(value) || value < 0 || value > row.max || invalidStep
 
       if (error) {
         hasError = true
@@ -163,5 +164,27 @@ Page({
         duration: 300
       })
     })
+  },
+  getShareTitle() {
+    const exam = this.data.current === 'TEM8' ? '专八' : '专四'
+
+    if (this.data.resultVisible && !this.data.resultError) {
+      return `我预估${exam}${this.data.score}分（${this.data.grade}）｜你也来测测`
+    }
+
+    return `${exam}成绩估分器｜测测你能考多少分`
+  },
+
+  onShareAppMessage() {
+    return {
+      title: this.getShareTitle(),
+      path: '/pages/calculator/calculator'
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: this.getShareTitle()
+    }
   }
 })

@@ -81,6 +81,12 @@
         <view class="grade">{{grade}}</view>
       </view>
       <view class="summary">{{summary}}</view>
+      <button
+        class="share-result"
+        hover-class="share-result-hover"
+        hover-stay-time="80"
+        open-type="share"
+      >晒晒我的成绩</button>
     </block>
   </view>
 
