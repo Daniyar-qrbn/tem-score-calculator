@@ -12,9 +12,10 @@ A simple score estimation tool for **TEM-4 (Test for English Majors Band 4)** an
 - Automatic total score calculation
 - Grade result: Excellent / Good / Pass / Fail
 - Input validation
-- Local data storage
+- Web: local data storage; Mini Program: inputs kept only during the current session
 - Responsive interface for desktop and mobile
 - WeChat Mini Program version
+- 微信小程序：全国参考结果“超过约 XX% 的考生”（仅供参考，非官方排名）
 
 ## Platforms
 
@@ -35,13 +36,13 @@ A native WeChat Mini Program version is also included, using:
 - WXML
 - WXSS
 - JavaScript
-- WeChat local storage
+- In-memory inputs while switching TEM4/TEM8; empty forms on a fresh launch
 
 ## Privacy
 
 The calculator does not require an account.
 
-Entered scores are stored locally in the user's browser or WeChat client and are not uploaded to a server.
+The Web version stores entered scores locally in the browser. The Mini Program keeps inputs only in memory during the current session, preserving them when switching TEM4/TEM8. Sharing (including cancellation) and returning from the background preserve the current inputs and result. A fresh launch that creates a new page starts with an empty TEM4 form. Closing the Mini Program UI may only background it; a retained page is the same session and is not reset. Previously stored Mini Program scores are ignored. Scores are not uploaded to a server.
 
 ## How It Works
 

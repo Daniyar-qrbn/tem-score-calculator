@@ -277,6 +277,24 @@
   line-height: 1.75;
 }
 
+.percentile {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 18rpx;
+  line-height: 1.65;
+}
+
+.percentile-title {
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.percentile-disclaimer {
+  margin-top: 14rpx;
+  font-size: 23rpx;
+}
+
 .share-result {
   width: 100%;
   min-height: 88rpx;

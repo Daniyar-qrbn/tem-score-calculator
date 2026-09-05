@@ -81,6 +81,10 @@
         <view class="grade">{{grade}}</view>
       </view>
       <view class="summary">{{summary}}</view>
+      <view wx:if="{{percentile}}" class="percentile">
+        <view class="percentile-title">{{percentile.label}}</view>
+        <view class="percentile-disclaimer">{{percentileDisclaimer}}</view>
+      </view>
       <button
         class="share-result"
         hover-class="share-result-hover"
@@ -91,6 +95,6 @@
   </view>
 
   <view class="footer">
-    估分仅供参考，实际题型与分值请以当年考试要求为准。填写内容只保存在你的微信本地存储中。
+    估分仅供参考，实际题型与分值请以当年考试要求为准。填写内容仅在本次使用期间保留，分享返回或切到后台后返回会保留，重新启动时显示空表。
   </view>
 </view>

@@ -3,23 +3,24 @@ const { readFileSync } = require('node:fs')
 const { resolve } = require('node:path')
 const test = require('node:test')
 const vm = require('node:vm')
+const { createRequire } = require('node:module')
 
 const calculatorSource = readFileSync(
   resolve(__dirname, '../miniprogram/pages/calculator/calculator.js'),
   'utf8'
 )
 
-function createPage({ stored, getStorageError, setStorageError } = {}) {
+function createPage({ stored } = {}) {
   let definition
   const storageWrites = []
+  const storageReads = []
   const scrollCalls = []
   const wx = {
-    getStorageSync() {
-      if (getStorageError) throw getStorageError
+    getStorageSync(key) {
+      storageReads.push(key)
       return stored
     },
     setStorageSync(key, value) {
-      if (setStorageError) throw setStorageError
       storageWrites.push({ key, value: { ...value } })
     },
     nextTick(callback) {
@@ -31,6 +32,7 @@ function createPage({ stored, getStorageError, setStorageError } = {}) {
   }
 
   vm.runInNewContext(calculatorSource, {
+    require: createRequire(resolve(__dirname, '../miniprogram/pages/calculator/calculator.js')),
     Page(pageDefinition) {
       definition = pageDefinition
     },
@@ -52,12 +54,13 @@ function createPage({ stored, getStorageError, setStorageError } = {}) {
     }
   }
 
-  return { page, storageWrites, scrollCalls }
+  return { page, storageWrites, storageReads, scrollCalls }
 }
 
 function loadPage(options) {
   const harness = createPage(options)
   harness.page.onLoad()
+  harness.page.onShow?.()
   return harness
 }
 
@@ -77,26 +80,121 @@ test('loads TEM4 by default and builds its seven score rows', () => {
   assert.equal(page.data.rows[1].quantityText, '20 题')
   assert.equal(page.data.rows[1].placeholder, '你的正确题数')
   assert.equal(page.data.rows[0].unit, '/ 10 分')
-  assert.equal(storageWrites.at(-1).value.current, 'TEM4')
+  assert.equal(storageWrites.length, 0)
 })
 
-test('restores the selected exam and its saved values', () => {
-  const { page } = loadPage({ stored: { current: 'TEM8', TEM8_0: '18' } })
-
-  assert.equal(page.data.current, 'TEM8')
-  assert.equal(page.data.formTitle, '专八成绩')
-  assert.equal(page.data.rows.length, 6)
-  assert.equal(page.data.rows[0].value, '18')
-})
-
-test('falls back safely when storage cannot be read or written', () => {
-  const { page } = loadPage({
-    getStorageError: new Error('unavailable'),
-    setStorageError: new Error('full')
+test('new sessions ignore legacy stored scores and open both exams empty', () => {
+  const { page, storageReads, storageWrites } = loadPage({
+    stored: { current: 'TEM8', TEM4_0: '9', TEM8_0: '18' }
   })
-
   assert.equal(page.data.current, 'TEM4')
-  assert.doesNotThrow(() => page.save())
+  assert.ok(page.data.rows.every((row) => row.value === ''))
+  page.showExam('TEM8')
+  assert.equal(page.data.rows.length, 6)
+  assert.ok(page.data.rows.every((row) => row.value === ''))
+  assert.equal(storageReads.length, 0)
+  assert.equal(storageWrites.length, 0)
+})
+
+function input(page, index, value) {
+  page.handleInput({ currentTarget: { dataset: { index } }, detail: { value } })
+}
+
+function switchTo(page, exam) {
+  page.switchExam({ currentTarget: { dataset: { exam } } })
+}
+
+test('switching exams retains separate in-memory inputs including zero and cleared fields', () => {
+  const { page, storageReads, storageWrites } = loadPage()
+  input(page, 0, '8.5')
+  input(page, 1, '0')
+  switchTo(page, 'TEM8')
+  assert.equal(page.data.rows[0].value, '')
+  input(page, 0, '18')
+  switchTo(page, 'TEM4')
+  assert.equal(page.data.rows[0].value, '8.5')
+  assert.equal(page.data.rows[1].value, '0')
+  input(page, 0, '')
+  switchTo(page, 'TEM8')
+  assert.equal(page.data.rows[0].value, '18')
+  switchTo(page, 'TEM4')
+  assert.equal(page.data.rows[0].value, '')
+  assert.equal(page.data.rows[1].value, '0')
+  assert.equal(storageReads.length, 0)
+  assert.equal(storageWrites.length, 0)
+})
+
+for (const exam of ['TEM4', 'TEM8']) {
+  for (const action of ['cancel share', 'complete share', 'timeline share', 'background']) {
+    test(`${exam} preserves all session state after ${action} and repeated returns`, () => {
+      const { page, storageReads, storageWrites } = loadPage()
+      const otherExam = exam === 'TEM4' ? 'TEM8' : 'TEM4'
+      switchTo(page, otherExam)
+      input(page, 0, '8')
+      switchTo(page, exam)
+      page.data.rows.forEach((row, index) => input(page, index, String(row.max)))
+      input(page, 0, '0')
+      page.calculate()
+      const before = JSON.stringify({ data: page.data, saved: page.saved })
+      const title = page.getShareTitle()
+      for (let i = 0; i < 3; i += 1) {
+        // Success and cancellation have the same page hide/show lifecycle;
+        // neither requires a share outcome callback to restore the state.
+        if (action === 'timeline share') {
+          assert.equal(page.onShareTimeline().title, title)
+        } else if (action !== 'background') {
+          const share = page.onShareAppMessage()
+          assert.equal(share.title, title)
+          assert.equal(share.path, '/pages/calculator/calculator')
+        }
+        page.onHide?.()
+        page.onShow?.()
+        assert.equal(JSON.stringify({ data: page.data, saved: page.saved }), before)
+      }
+      assert.equal(page.data.resultVisible, true)
+      assert.ok(page.data.percentile.label.startsWith('超过约 '))
+      switchTo(page, otherExam)
+      assert.equal(page.data.rows[0].value, '8')
+      switchTo(page, exam)
+      assert.equal(page.data.rows[0].value, '0')
+      page.calculate()
+      assert.equal(page.getShareTitle(), title)
+      assert.equal(storageReads.length, 0)
+      assert.equal(storageWrites.length, 0)
+    })
+  }
+}
+
+test('a fresh launch starts empty after a previous session calculated and shared', () => {
+  const { page, storageWrites } = loadPage()
+  for (const exam of ['TEM4', 'TEM8']) {
+    switchTo(page, exam)
+    page.data.rows.forEach((row, index) => input(page, index, String(row.max)))
+    page.calculate()
+    page.onShareAppMessage()
+  }
+  page.onUnload?.()
+  assert.equal(storageWrites.length, 0)
+
+  const fresh = loadPage({ stored: { current: 'TEM8', TEM4_0: '9', TEM8_0: '18' } }).page
+  assert.equal(fresh.data.current, 'TEM4')
+  assert.equal(fresh.data.score, 0)
+  assert.equal(fresh.data.grade, '')
+  assert.equal(fresh.data.resultVisible, false)
+  assert.equal(fresh.data.resultError, false)
+  assert.equal(fresh.data.resultMessage, '')
+  assert.equal(fresh.data.summary, '')
+  assert.equal(fresh.data.percentile, null)
+  assert.equal(fresh.data.focusedIndex, -1)
+  assert.equal(fresh.onShareAppMessage().title, '专四成绩估分器｜测测你能考多少分')
+  assert.ok(fresh.data.rows.every((row) => row.value === '' && !row.error))
+  switchTo(fresh, 'TEM8')
+  assert.ok(fresh.data.rows.every((row) => row.value === '' && !row.error))
+  fresh.data.rows.forEach((row, index) => input(fresh, index, String(row.max)))
+  fresh.calculate()
+  assert.equal(fresh.data.score, 100)
+  assert.equal(fresh.data.percentile.label, '超过约 100% 的考生')
+  assert.equal(fresh.onShareAppMessage().title, '我预估专八100分（优秀）｜你也来测测')
 })
 
 test('switching exam resets result state and ignores the active tab', () => {
@@ -114,7 +212,7 @@ test('switching exam resets result state and ignores the active tab', () => {
   assert.equal(page.data.rows, rows)
 })
 
-test('input updates the row, clears its error, and persists the value', () => {
+test('input updates the row, clears its error, and keeps the value in memory', () => {
   const { page, storageWrites } = loadPage()
   page.data.rows[2].error = true
 
@@ -125,7 +223,8 @@ test('input updates the row, clears its error, and persists the value', () => {
 
   assert.equal(page.data.rows[2].value, '15')
   assert.equal(page.data.rows[2].error, false)
-  assert.equal(storageWrites.at(-1).value.TEM4_2, '15')
+  assert.equal(page.saved.TEM4_2, '15')
+  assert.equal(storageWrites.length, 0)
 })
 
 test('focus and blur track the active row', () => {
@@ -171,7 +270,8 @@ test('calculates a TEM4 score, summary, and excellent grade', () => {
 })
 
 test('calculates TEM8 totals and rounds to one decimal place', () => {
-  const { page } = loadPage({ stored: { current: 'TEM8' } })
+  const { page } = loadPage()
+  switchTo(page, 'TEM8')
   fillRows(page, [20, 10, 12.5, 8, 11, 16])
 
   page.calculate()
@@ -194,5 +294,46 @@ test('assigns grades at each boundary', () => {
     page.data.rows[0].max = 100
     page.calculate()
     assert.equal(page.data.grade, grade, `expected ${score} to be ${grade}`)
+  }
+})
+
+test('percentile follows the calculated exam and clears on switches and errors', () => {
+  const { page } = loadPage()
+  assert.equal(page.data.percentile, null)
+  fillRows(page, [6, 12, 12, 6, 6, 6, 12])
+  page.calculate()
+  assert.equal(page.data.score, 60)
+  assert.equal(page.data.percentile.label, '超过约 51% 的考生')
+  assert.equal(page.data.percentileDisclaimer, '基于近年全国考试统计数据估算，仅供参考，非官方排名。')
+
+  page.switchExam({ currentTarget: { dataset: { exam: 'TEM8' } } })
+  assert.equal(page.data.percentile, null)
+  fillRows(page, [15, 8, 10, 6, 9, 12])
+  page.calculate()
+  assert.equal(page.data.score, 60)
+  assert.equal(page.data.percentile.label, '超过约 62% 的考生')
+  fillRows(page, ['', 8, 10, 6, 9, 12])
+  page.calculate()
+  assert.equal(page.data.resultError, true)
+  assert.equal(page.data.percentile, null)
+})
+
+test('percentile leaves direct and timeline share titles and paths unchanged', () => {
+  for (const exam of ['TEM4', 'TEM8']) {
+    const { page } = loadPage()
+    switchTo(page, exam)
+    const name = exam === 'TEM4' ? '专四' : '专八'
+    const generic = `${name}成绩估分器｜测测你能考多少分`
+    assert.equal(page.onShareAppMessage().title, generic)
+    fillRows(page, page.data.rows.map((row) => row.max))
+    page.calculate()
+    assert.equal(page.data.score, 100)
+    assert.equal(page.onShareAppMessage().title, `我预估${name}100分（优秀）｜你也来测测`)
+    assert.equal(page.onShareAppMessage().path, '/pages/calculator/calculator')
+    assert.equal(page.onShareTimeline().title, page.onShareAppMessage().title)
+    page.data.rows[0].value = ''
+    page.calculate()
+    assert.equal(page.onShareAppMessage().title, generic)
+    assert.equal(page.onShareTimeline().title, generic)
   }
 })

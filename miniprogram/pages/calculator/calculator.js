@@ -1,3 +1,5 @@
+const { estimatePercentile, DISCLAIMER } = require('../../utils/percentile')
+
 const EXAMS = {
   TEM4: [
     { part: 'PART I', name: '听写', quantity: '1 篇', max: 10, full: 10, type: 'score' },
@@ -16,17 +18,6 @@ const EXAMS = {
     { part: 'PART IV', name: '汉译英', quantity: '1 篇', max: 15, full: 15, type: 'score' },
     { part: 'PART V', name: '写作', quantity: '1 篇', max: 20, full: 20, type: 'score' }
   ]
-}
-
-const STORAGE_KEY = 'tem_simple_scores_v3'
-
-function readSavedData() {
-  try {
-    const value = wx.getStorageSync(STORAGE_KEY)
-    return value && typeof value === 'object' ? value : {}
-  } catch (error) {
-    return {}
-  }
 }
 
 function makeRows(exam, saved) {
@@ -52,22 +43,17 @@ Page({
     resultMessage: '',
     score: 0,
     grade: '',
-    summary: ''
+    summary: '',
+    percentile: null,
+    percentileDisclaimer: DISCLAIMER
   },
 
   onLoad() {
-    this.saved = readSavedData()
-    const current = this.saved.current === 'TEM8' ? 'TEM8' : 'TEM4'
-    this.showExam(current)
-  },
-
-  save() {
-    this.saved.current = this.data.current
-    try {
-      wx.setStorageSync(STORAGE_KEY, this.saved)
-    } catch (error) {
-      // 存储空间不可用时不影响本次估分。
-    }
+    // 仅在创建新页面时初始化。本次运行的输入只保存在内存中。
+    // 分享、取消分享和前后台切换都可能隐藏/显示同一页面，不能据此清空。
+    this.saved = {}
+    this.showExam('TEM4')
+    this.setData({ score: 0, grade: '', focusedIndex: -1 })
   },
 
   showExam(current) {
@@ -78,9 +64,9 @@ Page({
       resultVisible: false,
       resultError: false,
       resultMessage: '',
+      percentile: null,
       summary: ''
     })
-    this.save()
   },
 
   switchExam(event) {
@@ -98,7 +84,6 @@ Page({
       [`rows[${index}].value`]: value,
       [`rows[${index}].error`]: false
     })
-    this.save()
   },
 
   handleFocus(event) {
@@ -136,6 +121,7 @@ Page({
         resultVisible: true,
         resultError: true,
         resultMessage: '请检查标红的输入框，每一项都要填写，没做对可以填 0。',
+        percentile: null,
         summary: ''
       })
       this.scrollToResult()
@@ -151,9 +137,9 @@ Page({
       resultMessage: '',
       score,
       grade,
+      percentile: estimatePercentile(this.data.current, score),
       summary: summaryParts.join(' · ')
     })
-    this.save()
     this.scrollToResult()
   },
 
